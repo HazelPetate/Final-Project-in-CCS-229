@@ -55,8 +55,7 @@ def app():
                 st.session_state.exercise = exercise
                 st.experimental_rerun()
 
-            asyncio.create_task(fetch_exercise())
-            st.write("Fetching your exercise recommendation...")
+            asyncio.run(fetch_exercise())
         else:
             st.write(f"Recommended exercise for {st.session_state.level} level, focusing on {st.session_state.body_part}, with {st.session_state.difficulty} difficulty, aiming for {st.session_state.goal}, and using {st.session_state.equipment} is: {st.session_state.exercise}")
             if st.button("Start Over"):
