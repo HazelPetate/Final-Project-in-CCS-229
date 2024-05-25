@@ -1,5 +1,6 @@
 import streamlit as st
 import openai
+import asyncio
 
 from openai import AsyncOpenAI
 
@@ -28,18 +29,41 @@ def app():
         st.session_state.step = 1
 
     if st.session_state.step == 1:
-        level = st.selectbox("Select your fitness level", ["beginner", "pro"], key='level')
-        body_part = st.selectbox("Select the body part to focus on", ["upper body", "lower body", "core"], key='body_part')
-        difficulty = st.selectbox("Select the difficulty level", ["easy", "medium", "hard"], key='difficulty')
+        st.session_state.level = st.selectbox("Select your fitness level", ["beginner", "pro"])
+        st.session_state.body_part = st.selectbox("Select the body part to focus on", ["upper body", "lower body", "core"])
+        st.session_state.difficulty = st.selectbox("Select the difficulty level", ["easy", "medium", "hard"])
         if st.button("Next"):
             st.session_state.step = 2
 
     if st.session_state.step == 2:
-        goal = st.text_input("What is your specific fitness goal?", key='goal')
-        equipment = st.text_input("What equipment do you have access to?", key='equipment')
+        st.session_state.goal = st.text_input("What is your specific fitness goal?")
+        st.session_state.equipment = st.text_input("What equipment do you have access to?")
         if st.button("Get Exercise Recommendation"):
-            exercise = async.run(generate_exercise_recommendation(st.session_state.level, st.session_state.body_part, st.session_state.difficulty, goal, equipment))
-            st.write(f"Recommended exercise for {st.session_state.level} level, focusing on {st.session_state.body_part}, with {st.session_state.difficulty} difficulty, aiming for {goal}, and using {equipment} is: {exercise}")
+            st.session_state.step = 3  # Proceed to show the recommendation
+            st.experimental_rerun()
+
+    if st.session_state.step == 3:
+        if 'exercise' not in st.session_state:
+            async def fetch_exercise():
+                exercise = await generate_exercise_recommendation(
+                    st.session_state.level,
+                    st.session_state.body_part,
+                    st.session_state.difficulty,
+                    st.session_state.goal,
+                    st.session_state.equipment
+                )
+                st.session_state.exercise = exercise
+                st.experimental_rerun()
+
+            asyncio.create_task(fetch_exercise())
+            st.write("Fetching your exercise recommendation...")
+        else:
+            st.write(f"Recommended exercise for {st.session_state.level} level, focusing on {st.session_state.body_part}, with {st.session_state.difficulty} difficulty, aiming for {st.session_state.goal}, and using {st.session_state.equipment} is: {st.session_state.exercise}")
+            if st.button("Start Over"):
+                for key in ['step', 'level', 'body_part', 'difficulty', 'goal', 'equipment', 'exercise']:
+                    if key in st.session_state:
+                        del st.session_state[key]
+                st.experimental_rerun()
 
 if __name__ == "__main__":
     app()
