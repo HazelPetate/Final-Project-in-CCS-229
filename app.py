@@ -38,7 +38,7 @@ def app():
         goal = st.text_input("What is your specific fitness goal?", key='goal')
         equipment = st.text_input("What equipment do you have access to?", key='equipment')
         if st.button("Get Exercise Recommendation"):
-            exercise = asyncio.run(generate_exercise_recommendation(st.session_state.level, st.session_state.body_part, st.session_state.difficulty, goal, equipment))
+            exercise = async.run(generate_exercise_recommendation(st.session_state.level, st.session_state.body_part, st.session_state.difficulty, goal, equipment))
             st.write(f"Recommended exercise for {st.session_state.level} level, focusing on {st.session_state.body_part}, with {st.session_state.difficulty} difficulty, aiming for {goal}, and using {equipment} is: {exercise}")
 
 if __name__ == "__main__":
