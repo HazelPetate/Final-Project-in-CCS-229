@@ -21,21 +21,25 @@ async def generate_exercise_recommendation(level, body_part, difficulty, goal, e
 
     return response.choices[0].message.content
 
-async def app():
+def app():
     st.title("Fitness Exercise Recommendation App")
 
-    level = st.selectbox("Select your fitness level", ["beginner", "pro"])
-    body_part = st.selectbox("Select the body part to focus on", ["upper body", "lower body", "core"])
-    difficulty = st.selectbox("Select the difficulty level", ["easy", "medium", "hard"])
+    if 'step' not in st.session_state:
+        st.session_state.step = 1
 
-    if st.button("Next"):
-        goal = st.text_input("What is your specific fitness goal?")
-        equipment = st.text_input("What equipment do you have access to?")
-        
+    if st.session_state.step == 1:
+        level = st.selectbox("Select your fitness level", ["beginner", "pro"], key='level')
+        body_part = st.selectbox("Select the body part to focus on", ["upper body", "lower body", "core"], key='body_part')
+        difficulty = st.selectbox("Select the difficulty level", ["easy", "medium", "hard"], key='difficulty')
+        if st.button("Next"):
+            st.session_state.step = 2
+
+    if st.session_state.step == 2:
+        goal = st.text_input("What is your specific fitness goal?", key='goal')
+        equipment = st.text_input("What equipment do you have access to?", key='equipment')
         if st.button("Get Exercise Recommendation"):
-            exercise = await generate_exercise_recommendation(level, body_part, difficulty, goal, equipment)
-            st.write(f"Recommended exercise for {level} level, focusing on {body_part}, with {difficulty} difficulty, aiming for {goal}, and using {equipment} is: {exercise}")
+            exercise = asyncio.run(generate_exercise_recommendation(st.session_state.level, st.session_state.body_part, st.session_state.difficulty, goal, equipment))
+            st.write(f"Recommended exercise for {st.session_state.level} level, focusing on {st.session_state.body_part}, with {st.session_state.difficulty} difficulty, aiming for {goal}, and using {equipment} is: {exercise}")
 
 if __name__ == "__main__":
-    import asyncio
-    asyncio.run(app())
+    app()
